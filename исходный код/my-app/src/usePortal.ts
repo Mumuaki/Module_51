@@ -23,8 +23,8 @@ export default function usePortal({
   closeOnOutsideClick = true,
 }: UsePortalOptions = {}) {
   const [isOpen, makeOpen] = useState(defaultIsOpen);
-
   const open = useRef(isOpen);
+
   const setOpen = useCallback((v: boolean) => {
     open.current = v;
     makeOpen(v);
@@ -38,14 +38,8 @@ export default function usePortal({
   }, []);
 
   const openPortal = useCallback(() => {
-    if (targetEl.current === null) {
-      throw Error(
-        "Для открытия портала, необходилмо добавить ref для элемента"
-      );
-    }
-
     setOpen(true);
-  }, [setOpen, targetEl]);
+  }, [setOpen]);
 
   const closePortal = useCallback(() => {
     if (open.current) {
@@ -63,11 +57,11 @@ export default function usePortal({
     (e: MouseEvent): void => {
       const containsTarget = (target: HTMLElRef) =>
         target.current.contains(e.target as HTMLElement);
-
-      if (containsTarget(portal) || (e as any).button !== 0 || !open.current) {
+      
+      if (containsTarget(portal) || !open.current) {
         return;
       }
-
+      
       if (closeOnOutsideClick) {
         closePortal();
       }
@@ -80,7 +74,6 @@ export default function usePortal({
       if (!(portal.current instanceof HTMLElement)) {
         return;
       }
-
       handleOutsideMouseDownClick(e);
     },
     [handleOutsideMouseDownClick]
@@ -101,16 +94,14 @@ export default function usePortal({
     }
 
     const node = portal.current;
-
     elementMountTo.appendChild(portal.current);
-
+    
     document.addEventListener("keydown", handleKeydown);
     document.addEventListener("mousedown", handleMouseDown);
 
     return () => {
       document.removeEventListener("keydown", handleKeydown);
       document.removeEventListener("mousedown", handleMouseDown);
-
       elementMountTo.removeChild(node);
     };
   }, [elementMountTo, handleKeydown, handleMouseDown, portal]);
@@ -120,7 +111,6 @@ export default function usePortal({
       if (portal.current !== null) {
         return createPortal(children, portal.current);
       }
-
       return null;
     },
     [portal]
